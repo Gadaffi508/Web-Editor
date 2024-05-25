@@ -1,24 +1,37 @@
 import streamlit as st
 from PIL import Image
-import requests
-
-# Yüz tanıma kütüphanesi
 import cv2
 import numpy as np
 from tensorflow.keras.preprocessing import image as keras_image
 from tensorflow.keras.models import load_model
+from tensorflow.keras.optimizers import Adam
+import h5py
 
 # Duygu tanıma modelini yükleme
-emotion_model = load_model('path_to_your_emotion_model')
+model_path = r'C:\Users\yusuf\OneDrive\Masaüstü\WebEditörü\Web-Editor\Work\emotion_model.hdf5'
+try:
+    with h5py.File(model_path, 'r') as f:
+        print("Dosya başarıyla açıldı.")
+except OSError as e:
+    print(f"Dosya açılamadı: {e}")  
+
+# Modeli compile etmeden yükleyin
+emotion_model = load_model(model_path, compile=False)
+
+# Yeni bir optimizer ile modeli compile edin
+emotion_model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
 
 # Streamlit başlığı
 st.title("Hoşgeldiniz!")
 
 # Kamerayı açma
 cap = cv2.VideoCapture(0)
-while True:
+
+# OpenCV'den kareleri okuma ve Streamlit'te gösterme
+while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
+        st.write("Kameradan görüntü alınamıyor.")
         break
 
     # Frame'i gri tonlamalı hale getirme
@@ -31,7 +44,7 @@ while True:
     for (x, y, w, h) in faces:
         # Yüzü kırpma
         roi_gray = gray[y:y+h, x:x+w]
-        roi_gray = cv2.resize(roi_gray, (48, 48))
+        roi_gray = cv2.resize(roi_gray, (64, 64))
         img_pixels = keras_image.img_to_array(roi_gray)
         img_pixels = np.expand_dims(img_pixels, axis=0)
         img_pixels /= 255
@@ -44,18 +57,38 @@ while True:
 
         # Kamerada yüzü çizme ve duygu etiketini ekleme
         cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
-        cv2.putText(frame, predicted_emotion, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
+        cv2.putText(frame, predicted_emotion, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
 
     # Kameradan çekilen görüntüyü Streamlit uygulamasına gönderme
     st.image(frame, channels="BGR")
 
     # Streamlit üzerinden duygu durumunu kontrol etme
-    if predicted_emotion == 'Mutlu':
-        st.write("Harika! Sen çok mutlusunuz. Şimdi bir oyun oynamaya ne dersiniz?")
+    if predicted_emotion == 'Kızgın':
+        st.write("Harika! Sen çok Kızgın. Şimdi bir oyun oynamaya ne dersiniz?")
         # Burada mutlu olduğunda yönlendireceğiniz oyunu başlatmak için gerekli kodları ekleyebilirsiniz.
+        break
+    elif predicted_emotion == 'İğrenme':
+        st.write("İğrenme görünüyorsunuz. Belki bir oyun oynamak moralinizi yükseltir.")
+        # Burada üzgün olduğunda yönlendireceğiniz oyunu başlatmak için gerekli kodları ekleyebilirsiniz.
+        break
+    elif predicted_emotion == 'Korku':
+        st.write("Korku görünüyorsunuz. Belki bir oyun oynamak moralinizi yükseltir.")
+        # Burada üzgün olduğunda yönlendireceğiniz oyunu başlatmak için gerekli kodları ekleyebilirsiniz.
+        break
+    elif predicted_emotion == 'Mutlu':
+        st.write("Mutlu görünüyorsunuz. Belki bir oyun oynamak moralinizi yükseltir.")
+        # Burada üzgün olduğunda yönlendireceğiniz oyunu başlatmak için gerekli kodları ekleyebilirsiniz.
         break
     elif predicted_emotion == 'Üzgün':
         st.write("Üzgün görünüyorsunuz. Belki bir oyun oynamak moralinizi yükseltir.")
+        # Burada üzgün olduğunda yönlendireceğiniz oyunu başlatmak için gerekli kodları ekleyebilirsiniz.
+        break
+    elif predicted_emotion == 'Şaşkın':
+        st.write("Şaşkın görünüyorsunuz. Belki bir oyun oynamak moralinizi yükseltir.")
+        # Burada üzgün olduğunda yönlendireceğiniz oyunu başlatmak için gerekli kodları ekleyebilirsiniz.
+        break
+    elif predicted_emotion == 'Doğal':
+        st.write("Doğal görünüyorsunuz. Belki bir oyun oynamak moralinizi yükseltir.")
         # Burada üzgün olduğunda yönlendireceğiniz oyunu başlatmak için gerekli kodları ekleyebilirsiniz.
         break
 
