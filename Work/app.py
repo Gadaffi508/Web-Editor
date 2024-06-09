@@ -1,3 +1,12 @@
+#<------------------------------------------------------------------------------------------------------------------------------------------->
+# Kullanılacak Kütüphaneleri import etme
+# --pip install streamlit
+# --pip install opencv-python
+# --pip install numpy
+# --pip install h5py
+# --pip install pillow
+# --pip install tensorflow
+#<------------------------------------------------------------------------------------------------------------------------------------------->
 import streamlit as st
 import cv2
 import numpy as np
